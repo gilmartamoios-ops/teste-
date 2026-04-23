@@ -14,7 +14,6 @@ body { font-family: 'Montserrat', sans-serif; background-color: #080808; color: 
 .prosff-card { background: #121212; border: 1px solid #222; }
 .gold-text { color: #ffcc00; }
 .green-text { color: #00ff88; }
-input[type=range] { accent-color: #00ff88; }
 </style>
 </head>
 
@@ -26,20 +25,20 @@ input[type=range] { accent-color: #00ff88; }
 <h1 class="text-4xl font-black gold-text">ProSFF</h1>
 
 <p class="text-xs text-gray-500 uppercase mt-2">
-Simulador de construção por células
+Simulador de construção linear
 </p>
 
 <p class="text-[10px] text-gray-600 mt-1 uppercase">
-1 consumidor duplicando para 3 consumidores
+2 consumidores por etapa (sem duplicação)
 </p>
 </header>
 <div class="prosff-card rounded-3xl p-4 mb-6 border-dashed border-green-500/30">
 
-<div class="grid grid-cols-3 gap-3">
+<div class="grid grid-cols-1 gap-3">
 
 <div>
 <label class="text-[10px] text-gray-500 uppercase block mb-1 text-center">
-Consumo
+VCMC (Consumo médio consultor)
 </label>
 
 <input id="consumo" type="text" placeholder="R$ 300,00"
@@ -47,35 +46,8 @@ class="text-center bg-black border border-gray-700 rounded-xl p-2 w-full text-gr
 oninput="simular()">
 </div>
 
-<div>
-<label class="text-[10px] text-gray-500 uppercase block mb-1 text-center">
-Consumo rede
-</label>
-
-<input id="consumoRede" type="text" placeholder="R$ 300,00"
-class="text-center bg-black border border-gray-700 rounded-xl p-2 w-full text-green-400 font-bold"
-oninput="simular()">
 </div>
 
-<div>
-<label class="text-[10px] text-gray-500 uppercase block mb-1 text-center">
-Duplicação
-</label>
-
-<input id="duplicacao" type="number" value="3"
-class="text-center bg-black border border-gray-700 rounded-xl p-2 w-full text-green-400 font-bold"
-oninput="simular()">
-</div>
-
-</div>
-
-</div>
-
-<div class="prosff-card rounded-3xl p-6 mb-6 text-center">
-<p class="text-xs text-gray-400">
-No ProSFF o crescimento acontece por duplicação de consumidores.<br><br>
-<strong class="text-white">Não é sobre tempo. É sobre construção.</strong>
-</p>
 </div>
 
 <div class="flex items-center justify-between mb-4">
@@ -111,118 +83,52 @@ simular();
 }
 }
 
-function getStatus(e){
-if(e===1) return "Começo consciente";
-if(e===2) return "Primeira duplicação";
-if(e===3) return "Estrutura em formação";
-if(e===4) return "Renda construída";
-return "Escala em construção";
-}
-
-function getAcao(e){
-if(e===1) return "Convide 3 pessoas";
-if(e===2) return "Ajude seus 3 a duplicarem";
-if(e===3) return "Acompanhe sua rede";
-return "Desenvolva novos líderes";
-}
-  function simular(){
+function simular(){
 
 try{
 
-let valorConsultor = document.getElementById('consumo').value;
-let valorRede = document.getElementById('consumoRede').value;
+let valorInput = document.getElementById('consumo').value;
 
-let CONSUMO_CONSULTOR = valorConsultor
+let VCMC = valorInput
 .replace("R$","")
 .replace(/\./g,"")
 .replace(",",".")
 .replace(/\s/g,"");
 
-CONSUMO_CONSULTOR = parseFloat(CONSUMO_CONSULTOR);
-if(isNaN(CONSUMO_CONSULTOR)){ CONSUMO_CONSULTOR = 300; }
+VCMC = parseFloat(VCMC);
 
-let CONSUMO_REDE = valorRede
-.replace("R$","")
-.replace(/\./g,"")
-.replace(",",".")
-.replace(/\s/g,"");
-
-CONSUMO_REDE = parseFloat(CONSUMO_REDE);
-if(isNaN(CONSUMO_REDE)){ CONSUMO_REDE = 300; }
-
-let DUPLICACAO = parseFloat(document.getElementById('duplicacao').value) || 3;
-
-document.getElementById('mesAtual').innerText = mesAtual;
-
+if(isNaN(VCMC)){
+VCMC = 300;
+}
 let container = document.getElementById('lista-etapas');
 container.innerHTML = '';
 
-let rede = 0;
-let ptsAnterior = 0;
+let consumidores = mesAtual * 2;
 
-const tiers = [
-{ pts: 950, pin: 100, vme: 0.5 },
-{ pts: 2450, pin: 200, vme: 0.5 },
-{ pts: 7250, pin: 700, vme: 0.4 },
-{ pts: 14750, pin: 1300, vme: 0.4 },
-{ pts: 27500, pin: 4000, vme: 0.4 },
-{ pts: 60000, pin: 12000, vme: 0.4 },
-{ pts: 122500, pin: 24000, vme: 0.4 },
-{ pts: 247500, pin: 34000, vme: 0.35 }
-];
-
-for(let e=1; e<=mesAtual; e++){
-
-let novos = Math.pow(DUPLICACAO,e);
-rede += novos;
-
-let faturamento = (rede * CONSUMO_REDE) + CONSUMO_CONSULTOR;
+let faturamento = consumidores * VCMC;
 
 let ptsMensal = faturamento / 3;
 
-let unilevel = 0;
-for(let g=1; g<=e; g++){
-let perc = (g<=2)?0.05:(g===3?0.09:0.04);
-unilevel += Math.pow(DUPLICACAO,g)*CONSUMO_REDE*perc;
-}
+let unilevel = consumidores * VCMC * 0.05;
 
-let bonus3D = (ptsMensal > ptsAnterior && ptsMensal <= 27500)? ptsAnterior:0;
-let ptsCarreira = ptsMensal + bonus3D;
-
-let pinBonus = 0;
-let ptsPorLinha = ptsCarreira / DUPLICACAO;
-
-for(let t of tiers){
-let ptsValidos = DUPLICACAO * Math.min(ptsPorLinha, t.pts*t.vme);
-if(ptsValidos >= t.pts){
-pinBonus = t.pin;
-}
-}
-
-let total = unilevel + pinBonus;
-
-ptsAnterior = ptsMensal;
-
-if(e === mesAtual){
+let total = unilevel;
 
 container.innerHTML = `
 <div class="prosff-card rounded-2xl p-6 border-l-4 border-l-green-500">
 
-<p class="text-[10px] text-gray-500 uppercase mb-2">Etapa ${mesAtual}</p>
+<p class="text-[10px] text-gray-500 uppercase mb-2">
+Etapa ${mesAtual}
+</p>
 
-<h3 class="text-lg font-bold mb-2">${rede} consumidores</h3>
-
-<p class="text-xs text-green-400 mb-4">${getStatus(e)}</p>
+<h3 class="text-lg font-bold mb-2">
+${consumidores} consumidores
+</h3>
 
 <p class="text-2xl font-black green-text mb-4">
 R$ ${Math.floor(total).toLocaleString('pt-BR')}
 </p>
 
-<p class="text-xs text-gray-400 mb-4">
-${getAcao(e)}
-</p>
-
-<a href="https://wa.me/5522999231211?text=Vim%20do%20simulador%20ProSFF.%0A%0AVi%20o%20cen%C3%A1rio%20e%20quero%20come%C3%A7ar%20minha%20primeira%20c%C3%A9lula.%0A%0APode%20me%20orientar%3F"
+<a href="https://wa.me/5522999231211?text=Vim%20do%20simulador%20ProSFF"
 target="_blank"
 class="bg-green-500 text-black font-bold px-4 py-3 rounded-xl inline-block w-full">
 
@@ -232,9 +138,6 @@ Quero começar minha primeira célula
 
 </div>
 `;
-}
-
-}
 
 }catch(e){
 console.log(e);
@@ -247,4 +150,4 @@ simular();
 </script>
 
 </body>
-</html>
+</html>  
