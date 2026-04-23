@@ -93,6 +93,7 @@ valor = valor.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 campo.value = "R$ " + valor;
 }
 
+  
 let mesAtual = 1;
 
 function avancar(){
@@ -108,9 +109,7 @@ mesAtual--;
 simular();
 }
 }
-<script>
-
-function simular(){
+  function simular(){
 
 try{
 
@@ -133,10 +132,9 @@ let consultores = mesAtual * ATIVACAO;
 let consumidores = consultores;
 
 let faturamento = consumidores * VALOR_FIXO;
-let ptsMensal = faturamento / 3;
 
-// UNILEVEL SIMPLIFICADO (1 linha)
-let unilevel = consumidores * VALOR_FIXO * 0.05;
+// UNILEVEL (linha única)
+let unilevel = faturamento * 0.05;
 
 let total = unilevel;
 
@@ -175,7 +173,7 @@ Falar no WhatsApp
 `;
 
 }catch(e){
-console.log(e);
+console.log("Erro:", e);
 }
 
 }
@@ -185,4 +183,4 @@ simular();
 </script>
 
 </body>
-</html>  
+</html>
