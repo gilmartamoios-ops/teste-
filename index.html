@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ProSFF | Simulador</title>
+<title>ProSFF | Simulador Profissional</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
 
@@ -26,11 +26,11 @@ input { outline: none; }
 <h1 class="text-4xl font-black gold-text">ProSFF</h1>
 
 <p class="text-xs text-gray-500 uppercase mt-2">
-Simulador de construção por células
+Simulador profissional de construção
 </p>
 
 <p class="text-[10px] text-gray-600 mt-1 uppercase">
-Crescimento por ativação mensal
+Controle total do operador
 </p>
 </header>
 <div class="prosff-card rounded-3xl p-4 mb-6 border-dashed border-green-500/30">
@@ -38,21 +38,36 @@ Crescimento por ativação mensal
 <div class="grid grid-cols-2 gap-3">
 
 <div>
-<label class="text-[10px] text-gray-500 uppercase block mb-1 text-center">
-VCMC
-</label>
-
+<label class="text-[10px] text-gray-500 text-center block">VCMC</label>
 <input id="consumo" type="text" value="R$ 300,00"
 class="text-center bg-black border border-gray-700 rounded-xl p-2 w-full text-green-400 font-bold"
 oninput="formatarMoeda(this); simular()">
 </div>
 
 <div>
-<label class="text-[10px] text-gray-500 uppercase block mb-1 text-center">
-Ativação
-</label>
+<label class="text-[10px] text-gray-500 text-center block">Base Inicial</label>
+<input id="base" type="number" value="0"
+class="text-center bg-black border border-gray-700 rounded-xl p-2 w-full text-green-400 font-bold"
+oninput="simular()">
+</div>
 
-<input id="ativacao" type="number" value="2"
+<div>
+<label class="text-[10px] text-gray-500 text-center block">Ativação / Etapa</label>
+<input id="ativacao" type="number" value="10"
+class="text-center bg-black border border-gray-700 rounded-xl p-2 w-full text-green-400 font-bold"
+oninput="simular()">
+</div>
+
+<div>
+<label class="text-[10px] text-gray-500 text-center block">Duplicação %</label>
+<input id="duplicacao" type="number" value="30"
+class="text-center bg-black border border-gray-700 rounded-xl p-2 w-full text-green-400 font-bold"
+oninput="simular()">
+</div>
+
+<div>
+<label class="text-[10px] text-gray-500 text-center block">Retenção %</label>
+<input id="retencao" type="number" value="80"
 class="text-center bg-black border border-gray-700 rounded-xl p-2 w-full text-green-400 font-bold"
 oninput="simular()">
 </div>
@@ -61,28 +76,15 @@ oninput="simular()">
 
 </div>
 
-<div class="prosff-card rounded-3xl p-6 mb-6 text-center">
-<p class="text-xs text-gray-400">
-Você não depende de duplicação.<br><br>
-Seu crescimento vem da sua ação direta.
-</p>
-</div>
 <div class="flex items-center justify-between mb-4">
-
 <button onclick="voltar()" class="bg-gray-800 px-4 py-2 rounded-xl">←</button>
-
-<p class="text-sm font-bold">
-Etapa <span id="mesAtual">1</span> de 12
-</p>
-
+<p class="font-bold">Etapa <span id="etapa">1</span> de 12</p>
 <button onclick="avancar()" class="bg-gray-800 px-4 py-2 rounded-xl">→</button>
-
 </div>
 
-<div id="lista-etapas"></div>
+<div id="resultado"></div>
 
 </div>
-
 <script>
 
 function formatarMoeda(campo){
@@ -93,77 +95,67 @@ valor = valor.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 campo.value = "R$ " + valor;
 }
 
-  
-let mesAtual = 1;
+let etapaAtual = 1;
 
 function avancar(){
-if(mesAtual < 12){
-mesAtual++;
+if(etapaAtual < 12){
+etapaAtual++;
 simular();
 }
 }
 
 function voltar(){
-if(mesAtual > 1){
-mesAtual--;
+if(etapaAtual > 1){
+etapaAtual--;
 simular();
 }
 }
-  function simular(){
 
-try{
+function simular(){
 
-let VALOR_FIXO = document.getElementById('consumo').value
+let consumo = document.getElementById('consumo').value
 .replace("R$","")
 .replace(/\./g,"")
 .replace(",",".")
 .trim();
 
-VALOR_FIXO = parseFloat(VALOR_FIXO) || 300;
+consumo = parseFloat(consumo) || 300;
 
-let ATIVACAO = parseFloat(document.getElementById('ativacao').value) || 2;
+let base = parseFloat(document.getElementById('base').value) || 0;
+let ativacao = parseFloat(document.getElementById('ativacao').value) || 10;
+let dup = (parseFloat(document.getElementById('duplicacao').value) || 30) / 100;
+let ret = (parseFloat(document.getElementById('retencao').value) || 80) / 100;
 
-document.getElementById('mesAtual').innerText = mesAtual;
+document.getElementById('etapa').innerText = etapaAtual;
 
-let container = document.getElementById('lista-etapas');
-container.innerHTML = '';
+for(let i=1;i<=etapaAtual;i++){
 
-let consultores = mesAtual * ATIVACAO;
-let consumidores = consultores;
+let novos = ativacao;
+let replicando = base * dup;
 
-let faturamento = consumidores * VALOR_FIXO;
+base = (base + novos + replicando) * ret;
 
-// UNILEVEL (linha única)
-let unilevel = faturamento * 0.05;
+}
 
-let total = unilevel;
+let consumidores = Math.floor(base);
+let faturamento = consumidores * consumo;
+let ganho = faturamento * 0.05;
 
-container.innerHTML = `
-<div class="prosff-card rounded-2xl p-6 border-l-4 border-l-green-500">
+document.getElementById('resultado').innerHTML = `
+<div class="prosff-card p-6 rounded-2xl border-l-4 border-l-green-500">
 
-<p class="text-[10px] text-gray-500 uppercase mb-2">
-Etapa ${mesAtual}
+<p class="text-xs text-gray-500 uppercase">Etapa ${etapaAtual}</p>
+
+<h3 class="text-lg font-bold">${consumidores} consumidores</h3>
+
+<p class="text-green-400 text-xs mb-4">Modelo realista</p>
+
+<p class="text-2xl font-black green-text">
+R$ ${Math.floor(ganho).toLocaleString('pt-BR')}
 </p>
 
-<h3 class="text-lg font-bold mb-2">
-${consultores} consultores ativos
-</h3>
-
-<p class="text-xs text-green-400 mb-4">
-Linha única de consumo
-</p>
-
-<p class="text-2xl font-black green-text mb-4">
-R$ ${Math.floor(total).toLocaleString('pt-BR')}
-</p>
-
-<p class="text-xs text-gray-400 mb-4">
-Baseado apenas em consumo real
-</p>
-
-<a href="https://wa.me/5522999231211?text=Vim%20do%20simulador%20ProSFF.%0A%0AQuero%20come%C3%A7ar%20minha%20estrutura."
-target="_blank"
-class="bg-green-500 text-black font-bold px-4 py-3 rounded-xl inline-block w-full">
+<a href="https://wa.me/5522999231211"
+class="bg-green-500 text-black font-bold px-4 py-3 rounded-xl block text-center mt-4">
 
 Falar no WhatsApp
 
@@ -171,10 +163,6 @@ Falar no WhatsApp
 
 </div>
 `;
-
-}catch(e){
-console.log("Erro:", e);
-}
 
 }
 
