@@ -14,6 +14,7 @@ body { font-family: 'Montserrat', sans-serif; background-color: #080808; color: 
 .prosff-card { background: #121212; border: 1px solid #222; }
 .gold-text { color: #ffcc00; }
 .green-text { color: #00ff88; }
+input { outline: none; }
 </style>
 </head>
 
@@ -25,23 +26,33 @@ body { font-family: 'Montserrat', sans-serif; background-color: #080808; color: 
 <h1 class="text-4xl font-black gold-text">ProSFF</h1>
 
 <p class="text-xs text-gray-500 uppercase mt-2">
-Simulador de construção linear
+Simulador de construção por células
 </p>
 
 <p class="text-[10px] text-gray-600 mt-1 uppercase">
-2 consumidores por etapa (sem duplicação)
+Crescimento por ativação mensal
 </p>
 </header>
 <div class="prosff-card rounded-3xl p-4 mb-6 border-dashed border-green-500/30">
 
-<div class="grid grid-cols-1 gap-3">
+<div class="grid grid-cols-2 gap-3">
 
 <div>
 <label class="text-[10px] text-gray-500 uppercase block mb-1 text-center">
-VCMC (Consumo médio consultor)
+VCMC
 </label>
 
-<input id="consumo" type="text" placeholder="R$ 300,00"
+<input id="consumo" type="text" value="R$ 300,00"
+class="text-center bg-black border border-gray-700 rounded-xl p-2 w-full text-green-400 font-bold"
+oninput="formatarMoeda(this); simular()">
+</div>
+
+<div>
+<label class="text-[10px] text-gray-500 uppercase block mb-1 text-center">
+Ativação
+</label>
+
+<input id="ativacao" type="number" value="2"
 class="text-center bg-black border border-gray-700 rounded-xl p-2 w-full text-green-400 font-bold"
 oninput="simular()">
 </div>
@@ -50,22 +61,37 @@ oninput="simular()">
 
 </div>
 
+<div class="prosff-card rounded-3xl p-6 mb-6 text-center">
+<p class="text-xs text-gray-400">
+Você não depende de duplicação.<br><br>
+Seu crescimento vem da sua ação direta.
+</p>
+</div>
 <div class="flex items-center justify-between mb-4">
 
-<button onclick="voltar()" class="btn-back px-4 py-2 rounded-xl">←</button>
+<button onclick="voltar()" class="bg-gray-800 px-4 py-2 rounded-xl">←</button>
 
 <p class="text-sm font-bold">
 Etapa <span id="mesAtual">1</span> de 12
 </p>
 
-<button onclick="avancar()" class="btn-back px-4 py-2 rounded-xl">→</button>
+<button onclick="avancar()" class="bg-gray-800 px-4 py-2 rounded-xl">→</button>
 
 </div>
 
 <div id="lista-etapas"></div>
 
 </div>
+
 <script>
+
+function formatarMoeda(campo){
+let valor = campo.value.replace(/\D/g,'');
+valor = (parseFloat(valor)/100).toFixed(2) + '';
+valor = valor.replace(".", ",");
+valor = valor.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+campo.value = "R$ " + valor;
+}
 
 let mesAtual = 1;
 
@@ -82,34 +108,35 @@ mesAtual--;
 simular();
 }
 }
+<script>
 
 function simular(){
 
 try{
 
-let valorInput = document.getElementById('consumo').value;
-
-let VCMC = valorInput
+let VALOR_FIXO = document.getElementById('consumo').value
 .replace("R$","")
 .replace(/\./g,"")
 .replace(",",".")
-.replace(/\s/g,"");
+.trim();
 
-VCMC = parseFloat(VCMC);
+VALOR_FIXO = parseFloat(VALOR_FIXO) || 300;
 
-if(isNaN(VCMC)){
-VCMC = 300;
-}
+let ATIVACAO = parseFloat(document.getElementById('ativacao').value) || 2;
+
+document.getElementById('mesAtual').innerText = mesAtual;
+
 let container = document.getElementById('lista-etapas');
 container.innerHTML = '';
 
-let consumidores = mesAtual * 2;
+let consultores = mesAtual * ATIVACAO;
+let consumidores = consultores;
 
-let faturamento = consumidores * VCMC;
-
+let faturamento = consumidores * VALOR_FIXO;
 let ptsMensal = faturamento / 3;
 
-let unilevel = consumidores * VCMC * 0.05;
+// UNILEVEL SIMPLIFICADO (1 linha)
+let unilevel = consumidores * VALOR_FIXO * 0.05;
 
 let total = unilevel;
 
@@ -121,18 +148,26 @@ Etapa ${mesAtual}
 </p>
 
 <h3 class="text-lg font-bold mb-2">
-${consumidores} consumidores
+${consultores} consultores ativos
 </h3>
+
+<p class="text-xs text-green-400 mb-4">
+Linha única de consumo
+</p>
 
 <p class="text-2xl font-black green-text mb-4">
 R$ ${Math.floor(total).toLocaleString('pt-BR')}
 </p>
 
-<a href="https://wa.me/5522999231211?text=Vim%20do%20simulador%20ProSFF"
+<p class="text-xs text-gray-400 mb-4">
+Baseado apenas em consumo real
+</p>
+
+<a href="https://wa.me/5522999231211?text=Vim%20do%20simulador%20ProSFF.%0A%0AQuero%20come%C3%A7ar%20minha%20estrutura."
 target="_blank"
 class="bg-green-500 text-black font-bold px-4 py-3 rounded-xl inline-block w-full">
 
-Quero começar minha primeira célula
+Falar no WhatsApp
 
 </a>
 
