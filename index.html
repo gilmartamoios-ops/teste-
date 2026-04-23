@@ -15,12 +15,6 @@ body { font-family: 'Montserrat', sans-serif; background-color: #080808; color: 
 .gold-text { color: #ffcc00; }
 .green-text { color: #00ff88; }
 input[type=range] { accent-color: #00ff88; }
-
-.ritmo-btn.active {
-    border-color: #00ff88;
-    background: rgba(0,255,136,0.1);
-    color: #00ff88;
-}
 </style>
 </head>
 
@@ -39,12 +33,47 @@ Simulador de construção por células
 1 consumidor duplicando para 3 consumidores
 </p>
 </header>
+<div class="prosff-card rounded-3xl p-4 mb-6 border-dashed border-green-500/30">
 
-<div class="prosff-card rounded-3xl p-4 mb-6 text-center border-dashed border-green-500/30">
-<span class="text-[10px] text-gray-500 uppercase block mb-1">
-Consumo mínimo mensal
-</span>
-<span class="text-2xl font-black green-text">R$ 300</span>
+<div class="grid grid-cols-3 gap-3">
+
+<div>
+<label class="text-[10px] text-gray-500 uppercase block mb-1 text-center">
+Consumo
+</label>
+
+<input id="consumo" type="text" value="R$ 300,00"
+class="text-center bg-black border border-gray-700 rounded-xl p-2 w-full text-green-400 font-bold"
+oninput="formatarMoeda(this); simular()">
+</div>
+
+<div>
+<label class="text-[10px] text-gray-500 uppercase block mb-1 text-center">
+Duplicação
+</label>
+
+<input id="duplicacao" type="number" value="3"
+class="text-center bg-black border border-gray-700 rounded-xl p-2 w-full text-green-400 font-bold"
+oninput="simular()">
+</div>
+
+<div>
+<label class="text-[10px] text-gray-500 uppercase block mb-1 text-center">
+Modo
+</label>
+
+<select id="modo"
+class="text-center bg-black border border-gray-700 rounded-xl p-2 w-full text-green-400 font-bold"
+onchange="simular()">
+
+<option value="duplicador">Rede que duplica</option>
+<option value="consumidor">Rede consumidora</option>
+
+</select>
+</div>
+
+</div>
+
 </div>
 
 <div class="prosff-card rounded-3xl p-6 mb-6 text-center">
@@ -53,74 +82,77 @@ No ProSFF o crescimento acontece por duplicação de consumidores.<br><br>
 <strong class="text-white">Não é sobre tempo. É sobre construção.</strong>
 </p>
 </div>
+<div class="flex items-center justify-between mb-4">
 
-<div class="prosff-card rounded-3xl p-6 mb-6">
+<button onclick="voltar()" class="btn-back px-4 py-2 rounded-xl">←</button>
 
-<label class="block text-[10px] text-gray-500 uppercase mb-4 text-center">
-Simule o ritmo do seu negócio
-</label>
+<p class="text-sm font-bold">
+Etapa <span id="mesAtual">1</span> de 12
+</p>
 
-<div class="grid grid-cols-3 gap-2 mb-6">
-
-<button onclick="setRitmo(60,this)" class="ritmo-btn p-3 rounded-xl border border-gray-800 text-[9px] font-bold">
-Conservador<br><span class="text-gray-500">2 meses</span>
-</button>
-
-<button onclick="setRitmo(30,this)" class="ritmo-btn active p-3 rounded-xl border border-gray-800 text-[9px] font-bold">
-Moderado<br><span class="text-gray-500">1 mês</span>
-</button>
-
-<button onclick="setRitmo(15,this)" class="ritmo-btn p-3 rounded-xl border border-gray-800 text-[9px] font-bold">
-Acelerado<br><span class="text-gray-500">15 dias</span>
-</button>
+<button onclick="avancar()" class="btn-back px-4 py-2 rounded-xl">→</button>
 
 </div>
 
-<label class="block text-[10px] text-gray-500 uppercase mb-2 text-center">
-Etapas: <span id="etapas-val" class="green-text">5</span>
-</label>
-
-<input type="range" id="etapas" min="1" max="8" value="5" class="w-full" oninput="simular()">
+<div id="lista-etapas"></div>
 
 </div>
-
-<div id="lista-etapas" class="space-y-4"></div>
-
-</div>
-
 <script>
 
-let ritmoDias = 30;
-const VALOR_FIXO = 300;
+function formatarMoeda(campo){
+let valor = campo.value.replace(/\D/g,'');
+valor = (parseFloat(valor)/100).toFixed(2) + '';
+valor = valor.replace(".", ",");
+valor = valor.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+campo.value = "R$ " + valor;
+}
 
-function setRitmo(dias, btn) {
-    ritmoDias = dias;
-    document.querySelectorAll('.ritmo-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    simular();
+let mesAtual = 1;
+
+function avancar(){
+if(mesAtual < 12){
+mesAtual++;
+simular();
+}
+}
+
+function voltar(){
+if(mesAtual > 1){
+mesAtual--;
+simular();
+}
 }
 
 function getStatus(e){
-    if(e===1) return "Começo consciente";
-    if(e===2) return "Primeira duplicação";
-    if(e===3) return "Estrutura em formação";
-    if(e===4) return "Rede consistente";
-    return "Escala em construção";
+if(e===1) return "Começo consciente";
+if(e===2) return "Primeira duplicação";
+if(e===3) return "Estrutura em formação";
+if(e===4) return "Renda construída";
+return "Escala em construção";
 }
-
 function getAcao(e){
-    if(e===1) return "Convide 3 pessoas";
-    if(e===2) return "Ajude seus 3 a duplicarem";
-    if(e===3) return "Acompanhe sua rede";
-    return "Desenvolva novos líderes";
+if(e===1) return "Convide 3 pessoas";
+if(e===2) return "Ajude seus 3 a duplicarem";
+if(e===3) return "Acompanhe sua rede";
+return "Desenvolva novos líderes";
 }
 
 function simular(){
 
 try{
 
-let etapas = parseInt(document.getElementById('etapas').value);
-document.getElementById('etapas-val').innerText = etapas;
+let VALOR_FIXO = document.getElementById('consumo').value
+.replace("R$","")
+.replace(/\./g,"")
+.replace(",",".")
+.trim();
+
+VALOR_FIXO = parseFloat(VALOR_FIXO) || 300;
+
+let DUPLICACAO = parseFloat(document.getElementById('duplicacao').value) || 3;
+let modo = document.getElementById('modo').value;
+
+document.getElementById('mesAtual').innerText = mesAtual;
 
 let container = document.getElementById('lista-etapas');
 container.innerHTML = '';
@@ -139,31 +171,54 @@ const tiers = [
 { pts: 247500, pin: 34000, vme: 0.35 }
 ];
 
-for(let e=1; e<=etapas; e++){
+for(let e=1; e<=mesAtual; e++){
 
-let novos = Math.pow(3,e);
+let novos;
+
+if(modo === "consumidor"){
+    if(e === 1){
+        novos = DUPLICACAO;
+    } else {
+        novos = 0;
+    }
+} else {
+    novos = Math.pow(DUPLICACAO,e);
+}
+
 rede += novos;
 
 let faturamento = rede * VALOR_FIXO;
 let ptsMensal = faturamento / 3;
 
-// UNILEVEL
 let unilevel = 0;
+
 for(let g=1; g<=e; g++){
+
 let perc = (g<=2)?0.05:(g===3?0.09:0.04);
-unilevel += Math.pow(3,g)*VALOR_FIXO*perc;
+
+let baseNivel;
+
+if(modo === "consumidor"){
+    if(g === 1){
+        baseNivel = DUPLICACAO;
+    } else {
+        baseNivel = 0;
+    }
+} else {
+    baseNivel = Math.pow(DUPLICACAO,g);
 }
 
-// BONUS 3D
+unilevel += baseNivel * VALOR_FIXO * perc;
+}
+
 let bonus3D = (ptsMensal > ptsAnterior && ptsMensal <= 27500)? ptsAnterior:0;
 let ptsCarreira = ptsMensal + bonus3D;
 
-// PIN
 let pinBonus = 0;
-let ptsPorLinha = ptsCarreira/3;
+let ptsPorLinha = ptsCarreira / DUPLICACAO;
 
 for(let t of tiers){
-let ptsValidos = 3*Math.min(ptsPorLinha, t.pts*t.vme);
+let ptsValidos = DUPLICACAO * Math.min(ptsPorLinha, t.pts*t.vme);
 if(ptsValidos >= t.pts){
 pinBonus = t.pin;
 }
@@ -171,68 +226,43 @@ pinBonus = t.pin;
 
 let total = unilevel + pinBonus;
 
-// TEMPO
-let tempoMeses = (e * ritmoDias) / 30;
-let tempoTexto = tempoMeses < 1 ? "15 dias" : tempoMeses.toFixed(1) + " meses";
+ptsAnterior = ptsMensal;
 
-container.innerHTML += `
-<div class="prosff-card rounded-2xl p-5 border-l-4 ${e===etapas?'border-l-green-500':'border-l-gray-800'}">
+if(e === mesAtual){
 
-<div class="mb-4 text-center bg-black/40 rounded-xl p-3 border border-green-500/20">
-    <p class="text-[10px] text-gray-500 uppercase">Tempo de construção</p>
-    <p class="text-xl font-black green-text">≈ ${tempoTexto}</p>
-</div>
+container.innerHTML = `
+<div class="prosff-card rounded-2xl p-6 border-l-4 border-l-green-500">
 
-<div class="flex justify-between">
+<p class="text-[10px] text-gray-500 uppercase mb-2">Etapa ${mesAtual}</p>
 
-<div>
-<p class="text-[10px] text-gray-500 uppercase">Etapa ${e}</p>
-<h3 class="text-sm font-bold">${rede} consumidores</h3>
-<p class="text-[10px] text-green-400">${getStatus(e)}</p>
-</div>
+<h3 class="text-lg font-bold mb-2">${rede} consumidores</h3>
 
-<div class="text-right">
-<p class="text-[10px] text-gray-500 uppercase">Renda potencial</p>
-<p class="text-lg font-black green-text">R$ ${Math.floor(total).toLocaleString('pt-BR')}</p>
-</div>
+<p class="text-xs text-green-400 mb-4">${getStatus(e)}</p>
 
-</div>
+<p class="text-2xl font-black green-text mb-4">
+R$ ${Math.floor(total).toLocaleString('pt-BR')}
+</p>
 
-<div class="mt-3 border-t border-gray-800 pt-3">
-<p class="text-[10px] text-gray-400 uppercase">Próximo passo</p>
-<p class="text-xs">${getAcao(e)}</p>
-</div>
+<p class="text-xs text-gray-400 mb-4">
+${getAcao(e)}
+</p>
+
+<a href="https://wa.me/5522999231211?text=Vim%20do%20simulador%20ProSFF.%0A%0AVi%20o%20cen%C3%A1rio%20e%20quero%20come%C3%A7ar%20minha%20primeira%20c%C3%A9lula.%0A%0APode%20me%20orientar%3F"
+target="_blank"
+class="bg-green-500 text-black font-bold px-4 py-3 rounded-xl inline-block w-full">
+
+Quero começar minha primeira célula
+
+</a>
 
 </div>
 `;
-
-ptsAnterior = ptsMensal;
+}
 
 }
 
-container.innerHTML += `
-<div class="prosff-card rounded-2xl p-6 text-center border border-green-500/30 mt-6">
-
-<p class="text-xs text-gray-400 uppercase mb-2">Próximo passo real</p>
-
-<h3 class="text-lg font-black green-text mb-3">
-Começar sua primeira célula
-</h3>
-
-<a href="https://chat.whatsapp.com/GZyIlwRw6GlLApxkCsWW8E" target="_blank"
-class="bg-green-500 text-black font-bold px-4 py-2 rounded-xl inline-block">
-Entrar na Comunidade
-</a>
-
-<p class="text-[10px] text-gray-600 mt-4">
-Este simulador mostra cenários de construção. O ritmo depende de cada pessoa.
-</p>
-
-</div>
-`;
-
 }catch(e){
-console.log("Erro:", e);
+console.log(e);
 }
 
 }
@@ -242,4 +272,4 @@ simular();
 </script>
 
 </body>
-</html>
+</html>    
