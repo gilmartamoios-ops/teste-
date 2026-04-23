@@ -35,7 +35,7 @@ Simulador de construção por células
 </header>
 <div class="prosff-card rounded-3xl p-4 mb-6 border-dashed border-green-500/30">
 
-<div class="grid grid-cols-2 gap-3">
+<div class="grid grid-cols-3 gap-3">
 
 <div>
 <label class="text-[10px] text-gray-500 uppercase block mb-1 text-center">
@@ -43,6 +43,16 @@ Consumo
 </label>
 
 <input id="consumo" type="text" placeholder="R$ 300,00"
+class="text-center bg-black border border-gray-700 rounded-xl p-2 w-full text-green-400 font-bold"
+oninput="simular()">
+</div>
+
+<div>
+<label class="text-[10px] text-gray-500 uppercase block mb-1 text-center">
+Consumo rede
+</label>
+
+<input id="consumoRede" type="text" placeholder="R$ 300,00"
 class="text-center bg-black border border-gray-700 rounded-xl p-2 w-full text-green-400 font-bold"
 oninput="simular()">
 </div>
@@ -115,23 +125,30 @@ if(e===2) return "Ajude seus 3 a duplicarem";
 if(e===3) return "Acompanhe sua rede";
 return "Desenvolva novos líderes";
 }
-function simular(){
+  function simular(){
 
 try{
 
-let valorInput = document.getElementById('consumo').value;
+let valorConsultor = document.getElementById('consumo').value;
+let valorRede = document.getElementById('consumoRede').value;
 
-let VALOR_FIXO = valorInput
+let CONSUMO_CONSULTOR = valorConsultor
 .replace("R$","")
 .replace(/\./g,"")
 .replace(",",".")
 .replace(/\s/g,"");
 
-VALOR_FIXO = parseFloat(VALOR_FIXO);
+CONSUMO_CONSULTOR = parseFloat(CONSUMO_CONSULTOR);
+if(isNaN(CONSUMO_CONSULTOR)){ CONSUMO_CONSULTOR = 300; }
 
-if(isNaN(VALOR_FIXO)){
-VALOR_FIXO = 300;
-}
+let CONSUMO_REDE = valorRede
+.replace("R$","")
+.replace(/\./g,"")
+.replace(",",".")
+.replace(/\s/g,"");
+
+CONSUMO_REDE = parseFloat(CONSUMO_REDE);
+if(isNaN(CONSUMO_REDE)){ CONSUMO_REDE = 300; }
 
 let DUPLICACAO = parseFloat(document.getElementById('duplicacao').value) || 3;
 
@@ -159,13 +176,14 @@ for(let e=1; e<=mesAtual; e++){
 let novos = Math.pow(DUPLICACAO,e);
 rede += novos;
 
-let faturamento = rede * VALOR_FIXO;
+let faturamento = (rede * CONSUMO_REDE) + CONSUMO_CONSULTOR;
+
 let ptsMensal = faturamento / 3;
 
 let unilevel = 0;
 for(let g=1; g<=e; g++){
 let perc = (g<=2)?0.05:(g===3?0.09:0.04);
-unilevel += Math.pow(DUPLICACAO,g)*VALOR_FIXO*perc;
+unilevel += Math.pow(DUPLICACAO,g)*CONSUMO_REDE*perc;
 }
 
 let bonus3D = (ptsMensal > ptsAnterior && ptsMensal <= 27500)? ptsAnterior:0;
@@ -229,4 +247,4 @@ simular();
 </script>
 
 </body>
-</html>    
+</html>
