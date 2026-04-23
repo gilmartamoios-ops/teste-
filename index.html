@@ -35,16 +35,16 @@ Simulador de construção por células
 </header>
 <div class="prosff-card rounded-3xl p-4 mb-6 border-dashed border-green-500/30">
 
-<div class="grid grid-cols-3 gap-3">
+<div class="grid grid-cols-2 gap-3">
 
 <div>
 <label class="text-[10px] text-gray-500 uppercase block mb-1 text-center">
 Consumo
 </label>
 
-<input id="consumo" type="text" value="300"
+<input id="consumo" type="text" placeholder="R$ 300,00"
 class="text-center bg-black border border-gray-700 rounded-xl p-2 w-full text-green-400 font-bold"
-oninput="simular()" onblur="formatarMoeda(this)">
+oninput="simular()">
 </div>
 
 <div>
@@ -55,19 +55,6 @@ Duplicação
 <input id="duplicacao" type="number" value="3"
 class="text-center bg-black border border-gray-700 rounded-xl p-2 w-full text-green-400 font-bold"
 oninput="simular()">
-</div>
-
-<div>
-<label class="text-[10px] text-gray-500 uppercase block mb-1 text-center">
-Modo
-</label>
-
-<select id="modo" 
-class="text-center bg-black border border-gray-700 rounded-xl p-2 w-full text-green-400 font-bold"
-onchange="simular()">
-<option value="rede">Rede</option>
-<option value="consumo">Só consumo</option>
-</select>
 </div>
 
 </div>
@@ -97,22 +84,6 @@ Etapa <span id="mesAtual">1</span> de 12
 
 </div>
 <script>
-
-function formatarMoeda(campo){
-
-let valor = campo.value.replace(/\D/g,'');
-
-if(valor === ""){
-campo.value = "";
-return;
-}
-
-valor = (parseFloat(valor)/100).toFixed(2);
-valor = valor.replace(".", ",");
-valor = valor.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-
-campo.value = "R$ " + valor;
-}
 
 let mesAtual = 1;
 
@@ -144,21 +115,25 @@ if(e===2) return "Ajude seus 3 a duplicarem";
 if(e===3) return "Acompanhe sua rede";
 return "Desenvolva novos líderes";
 }
-    function simular(){
+function simular(){
 
 try{
 
-let VALOR_FIXO = document.getElementById('consumo').value
+let valorInput = document.getElementById('consumo').value;
+
+let VALOR_FIXO = valorInput
 .replace("R$","")
 .replace(/\./g,"")
 .replace(",",".")
-.trim();
+.replace(/\s/g,"");
 
-VALOR_FIXO = parseFloat(VALOR_FIXO) || 300;
+VALOR_FIXO = parseFloat(VALOR_FIXO);
+
+if(isNaN(VALOR_FIXO)){
+VALOR_FIXO = 300;
+}
 
 let DUPLICACAO = parseFloat(document.getElementById('duplicacao').value) || 3;
-
-let MODO = document.getElementById('modo').value;
 
 document.getElementById('mesAtual').innerText = mesAtual;
 
@@ -181,7 +156,7 @@ const tiers = [
 
 for(let e=1; e<=mesAtual; e++){
 
-let novos = (MODO === "consumo") ? DUPLICACAO : Math.pow(DUPLICACAO,e);
+let novos = Math.pow(DUPLICACAO,e);
 rede += novos;
 
 let faturamento = rede * VALOR_FIXO;
@@ -189,28 +164,18 @@ let ptsMensal = faturamento / 3;
 
 let unilevel = 0;
 for(let g=1; g<=e; g++){
-
-let base = (MODO === "consumo") ? DUPLICACAO : Math.pow(DUPLICACAO,g);
-
 let perc = (g<=2)?0.05:(g===3?0.09:0.04);
-
-unilevel += base * VALOR_FIXO * perc;
+unilevel += Math.pow(DUPLICACAO,g)*VALOR_FIXO*perc;
 }
 
 let bonus3D = (ptsMensal > ptsAnterior && ptsMensal <= 27500)? ptsAnterior:0;
 let ptsCarreira = ptsMensal + bonus3D;
 
 let pinBonus = 0;
-let divisor = (MODO === "consumo") ? 1 : DUPLICACAO;
-
-let ptsPorLinha = ptsCarreira / divisor;
+let ptsPorLinha = ptsCarreira / DUPLICACAO;
 
 for(let t of tiers){
-
-let multiplicador = (MODO === "consumo") ? 1 : DUPLICACAO;
-
-let ptsValidos = multiplicador * Math.min(ptsPorLinha, t.pts*t.vme);
-
+let ptsValidos = DUPLICACAO * Math.min(ptsPorLinha, t.pts*t.vme);
 if(ptsValidos >= t.pts){
 pinBonus = t.pin;
 }
@@ -264,4 +229,4 @@ simular();
 </script>
 
 </body>
-</html>
+</html>    
